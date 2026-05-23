@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>پنل ادمین مِدیکو</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Vazirmatn',sans-serif;background:#0a0e1a;color:#e2e8f0;min-height:100vh;}
+#loginPage{min-height:100vh;display:flex;align-items:center;justify-content:center;}
+.box{background:#111827;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:40px;width:90%;max-width:380px;text-align:center;}
+.logo{font-size:1.8rem;font-weight:900;margin-bottom:6px;}
+.logo span{color:#00e5a0;}
+.sub{color:#64748b;font-size:.83rem;margin-bottom:28px;}
+input{width:100%;padding:12px 16px;background:#1a2235;border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;color:#e2e8f0;font-size:.9rem;font-family:'Vazirmatn',sans-serif;outline:none;margin-bottom:12px;text-align:right;}
+input:focus{border-color:#00e5a0;}
+button.main-btn{width:100%;padding:13px;background:#00e5a0;color:#0a1a10;border:none;border-radius:10px;font-weight:800;font-size:.95rem;cursor:pointer;font-family:'Vazirmatn',sans-serif;}
+.err{color:#ff4d6d;font-size:.82rem;margin-top:12px;display:none;}
+#panel{display:none;}
+.topbar{background:#111827;border-bottom:1px solid rgba(255,255,255,0.08);padding:16px 24px;display:flex;justify-content:space-between;align-items:center;}
+.logout-btn{padding:8px 16px;background:rgba(255,77,109,0.1);color:#ff4d6d;border:1px solid rgba(255,77,109,0.2);border-radius:8px;font-size:.8rem;cursor:pointer;font-family:'Vazirmatn',sans-serif;font-weight:700;}
+.content{padding:24px;max-width:900px;margin:0 auto;}
+.title{font-size:1.4rem;font-weight:900;margin-bottom:4px;}
+.subtitle{color:#64748b;font-size:.82rem;margin-bottom:20px;}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.kpi{background:#111827;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:18px;}
+.kpi-num{font-size:1.8rem;font-weight:900;color:#00e5a0;}
+.kpi-label{font-size:.75rem;color:#64748b;margin-top:3px;}
+.card{background:#111827;border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.card-head{padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.06);font-weight:700;font-size:.9rem;display:flex;justify-content:space-between;align-items:center;}
+.refresh-btn{padding:5px 12px;border:1px solid rgba(255,255,255,0.1);border-radius:6px;background:none;color:#64748b;font-size:.75rem;cursor:pointer;font-family:'Vazirmatn',sans-serif;}
+.rx-item{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.rx-item:last-child{border-bottom:none;}
+.rx-code{font-weight:700;color:#00e5a0;font-size:.85rem;flex:1;min-width:80px;}
+.rx-date{font-size:.75rem;color:#64748b;}
+.status{padding:3px 10px;border-radius:50px;font-size:.7rem;font-weight:700;}
+.s-pending{background:rgba(255,214,10,.1);color:#ffd60a;}
+.s-delivered{background:rgba(0,229,160,.1);color:#00e5a0;}
+.s-active{background:rgba(59,130,246,.1);color:#3b82f6;}
+.s-cancelled{background:rgba(255,77,109,.1);color:#ff4d6d;}
+.change-btn{padding:5px 12px;border:1px solid rgba(255,255,255,0.1);border-radius:6px;background:none;color:#e2e8f0;font-size:.72rem;cursor:pointer;font-family:'Vazirmatn',sans-serif;}
+.empty{text-align:center;padding:36px;color:#64748b;font-size:.85rem;}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#00e5a0;color:#0a1a10;padding:10px 22px;border-radius:50px;font-weight:700;font-size:.85rem;z-index:999;display:none;white-space:nowrap;}
+</style>
+</head>
+<body>
+
+<div id="loginPage">
+  <div class="box">
+    <div class="logo">مِدیکو<span>.</span></div>
+    <div class="sub">پنل مدیریت</div>
+    <input type="email" id="em" placeholder="ایمیل ادمین">
+    <input type="password" id="pw" placeholder="رمز عبور" onkeypress="if(event.key==='Enter')login()">
+    <button class="main-btn" onclick="login()">ورود به پنل</button>
+    <div class="err" id="err">ایمیل یا رمز اشتباه است</div>
+  </div>
+</div>
+
+<div id="panel">
+  <div class="topbar">
+    <div class="logo">مِدیکو<span>.</span> <span style="font-size:.75rem;color:#64748b;font-weight:400">ادمین</span></div>
+    <button class="logout-btn" onclick="logout()">خروج</button>
+  </div>
+  <div class="content">
+    <div class="title">داشبورد</div>
+    <div class="subtitle" id="ts"></div>
+    <div class="kpis">
+      <div class="kpi"><div class="kpi-num" id="kRx">—</div><div class="kpi-label">کل نسخه‌ها</div></div>
+      <div class="kpi"><div class="kpi-num" id="kPend">—</div><div class="kpi-label">در انتظار</div></div>
+      <div class="kpi"><div class="kpi-num" id="kUsr">—</div><div class="kpi-label">کاربران</div></div>
+      <div class="kpi"><div class="kpi-num" id="kDel">—</div><div class="kpi-label">تحویل‌شده</div></div>
+    </div>
+    <div class="card">
+      <div class="card-head">💊 نسخه‌ها <button class="refresh-btn" onclick="loadData()">بروزرسانی</button></div>
+      <div id="rxList"><div class="empty">در حال بارگذاری...</div></div>
+    </div>
+    <div class="card">
+      <div class="card-head">👥 کاربران</div>
+      <div id="uList"><div class="empty">در حال بارگذاری...</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var SURL='https://rgxjefvadlbpigwxehjg.supabase.co';
+var SKEY='sb_publishable_TK9hDgSzIroJJ5VJnUs9rw_6grZDVTm';
+var TOK=localStorage.getItem('adm_tok')||'';
+
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.style.display='block';setTimeout(function(){t.style.display='none';},2500);}
+
+async function req(path,method,body){
+  var opts={method:method||'GET',headers:{'apikey':SKEY,'Authorization':'Bearer '+(TOK||SKEY),'Content-Type':'application/json','Accept':'application/json'}};
+  if(body)opts.body=JSON.stringify(body);
+  var r=await fetch(SURL+path,opts);
+  try{return await r.json();}catch(e){return {};}
+}
+
+async function login(){
+  var em=document.getElementById('em').value.trim();
+  var pw=document.getElementById('pw').value;
+  if(!em||!pw)return;
+  try{
+    var d=await req('/auth/v1/token?grant_type=password','POST',{email:em,password:pw});
+    if(d.access_token){
+      TOK=d.access_token;
+      localStorage.setItem('adm_tok',TOK);
+      localStorage.setItem('adm_em',em);
+      showPanel(em);
+    }else{
+      document.getElementById('err').style.display='block';
+    }
+  }catch(e){document.getElementById('err').style.display='block';}
+}
+
+function showPanel(em){
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('panel').style.display='block';
+  document.getElementById('ts').textContent='ورود: '+em+' | '+new Date().toLocaleTimeString('fa-IR');
+  loadData();
+}
+
+function logout(){
+  localStorage.removeItem('adm_tok');localStorage.removeItem('adm_em');TOK='';
+  document.getElementById('panel').style.display='none';
+  document.getElementById('loginPage').style.display='flex';
+}
+
+var SL={'pending':'در انتظار','approved':'تأیید','processing':'آماده','shipped':'ارسال','delivered':'تحویل','cancelled':'لغو'};
+var SC={'pending':'s-pending','delivered':'s-delivered','approved':'s-active','processing':'s-active','shipped':'s-active','cancelled':'s-cancelled'};
+
+async function loadData(){
+  try{
+    var rx=await req('/rest/v1/prescriptions?select=*&order=created_at.desc');
+    var us=await req('/rest/v1/profiles?select=*');
+    var ra=Array.isArray(rx)?rx:[];var ua=Array.isArray(us)?us:[];
+    document.getElementById('kRx').textContent=ra.length;
+    document.getElementById('kPend').textContent=ra.filter(function(r){return r.status==='pending';}).length;
+    document.getElementById('kUsr').textContent=ua.length;
+    document.getElementById('kDel').textContent=ra.filter(function(r){return r.status==='delivered';}).length;
+    document.getElementById('rxList').innerHTML=ra.length?ra.map(function(r){
+      return '<div class="rx-item"><div class="rx-code">'+(r.tracking_code||r.id.slice(0,8))+'</div><div class="rx-date">'+new Date(r.created_at).toLocaleDateString('fa-IR')+'</div><span class="status '+(SC[r.status]||'s-pending')+'">'+(SL[r.status]||r.status)+'</span><button class="change-btn" onclick="chSt(\''+r.id+'\',\''+r.status+'\')">تغییر وضعیت</button></div>';
+    }).join(''):'<div class="empty">هنوز نسخه‌ای ثبت نشده</div>';
+    document.getElementById('uList').innerHTML=ua.length?ua.map(function(u){
+      return '<div class="rx-item"><div class="rx-code">'+(u.full_name||'کاربر')+'</div><div class="rx-date">'+(u.phone||'—')+'</div><span class="status s-active">فعال</span></div>';
+    }).join(''):'<div class="empty">کاربری ثبت نشده</div>';
+  }catch(e){document.getElementById('rxList').innerHTML='<div class="empty">خطا در اتصال به سرور</div>';}
+}
+
+async function chSt(id,cur){
+  var ss=['pending','approved','processing','shipped','delivered','cancelled'];
+  var nx=ss[(ss.indexOf(cur)+1)%ss.length];
+  await req('/rest/v1/prescriptions?id=eq.'+id,'PATCH',{status:nx});
+  toast('وضعیت به "'+SL[nx]+'" تغییر کرد ✅');
+  loadData();
+}
+
+window.onload=function(){
+  var t=localStorage.getItem('adm_tok');var e=localStorage.getItem('adm_em');
+  if(t&&e){TOK=t;showPanel(e);}
+};
+</script>
+</body>
+</html>
